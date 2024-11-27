@@ -54,7 +54,7 @@ export default function NavBar() {
             ))}
             <a
               className="flex text-sm font-normal bg-transparent rounded-lg md:mt-0 md:ml-4"
-              href={"https://github.com/JefferCreq/thesis"}
+              href={"https://github.com/JefferCreq/isc-verb-conjugator"}
             >
               <img
                 src="/github.svg"

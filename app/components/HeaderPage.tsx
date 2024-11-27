@@ -3,7 +3,7 @@ import React from "react";
 export default function HeaderPage({ title }: Props) {
   return (
     <div className="flex relative h-full w-full items-center">
-      <img src="/isc-header.png" alt="Remix" className="block w-full" />
+      <img src="/isc-header.png" alt="Remix" className="block w-full max-h-52 object-cover" />
 
       <div
         className="flex absolute inset-0 text-center justify-center w-full

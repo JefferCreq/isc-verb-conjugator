@@ -11,3 +11,7 @@ body {
   } */
   @apply bg-[#F1F1F1];
 }
+
+[class*="row-group-"]:hover {
+  background-color: rgba(64, 42, 43, 0.1);
+}
