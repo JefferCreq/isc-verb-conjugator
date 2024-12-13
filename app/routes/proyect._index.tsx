@@ -1,4 +1,19 @@
+import { MetaFunction } from "@remix-run/react";
 import HeaderPage from "~/components/HeaderPage";
+
+export const meta: MetaFunction = () => {
+  return [
+    {
+      title:
+        "Proyecto: Implementación de un prototipo de conjugación de verbos para Iskonawa",
+    },
+    {
+      name: "description",
+      content:
+        "Proyecto: Implementación de un prototipo de conjugación de verbos para Iskonawa",
+    },
+  ];
+};
 
 export default function ProyectIndex() {
   return (

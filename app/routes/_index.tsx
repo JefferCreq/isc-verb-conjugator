@@ -11,7 +11,7 @@ import VerbConjugatorField from "~/components/VerbConjugatorField";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Iskonawa Verb Conjugator" },
+    { title: "Conjugación de verbos Iskonawa" },
     { name: "description", content: "Welcome to Remix!" },
   ];
 };

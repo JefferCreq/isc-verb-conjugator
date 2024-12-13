@@ -15,3 +15,52 @@ body {
 [class*="row-group-"]:hover {
   background-color: rgba(64, 42, 43, 0.1);
 }
+
+details.category summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+}
+
+details.category[open] > summary::after {
+  /* content: "▼"; */
+  content: none;
+  @apply text-orange-950  text-xs;
+}
+
+details.category > summary::after {
+  content: "(...)";
+  margin-left: 8px;
+  @apply text-orange-700 hover:text-orange-600 text-xs;
+}
+
+/* Estilos para detalles anidados */
+details.category details[open] > summary::after {
+  /* content: "▼"; */
+  content: none;
+  @apply text-orange-950  text-xs;
+}
+
+details.category details > summary::after {
+  content: "(...)";
+  margin-left: 8px;
+  @apply text-orange-700 hover:text-orange-600 text-xs;
+}
+
+details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+}
+
+details[open] summary::before {
+  content: "▼";
+  /* margin-right: 8px; */
+}
+
+details summary::before {
+  content: "►";
+  /* margin-right: 8px; */
+}

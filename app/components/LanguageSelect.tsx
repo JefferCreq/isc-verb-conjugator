@@ -51,9 +51,9 @@ export default function LanguageSelect({
     }
   };
 
-  const handleMouseEnter = (index: number) => {
-    setHighlightedIndex(index);
-  };
+  // const handleMouseEnter = (index: number) => {
+  //   setHighlightedIndex(index);
+  // };
 
   useEffect(() => {
     if (isOpen && listRef.current) {
@@ -88,6 +88,7 @@ export default function LanguageSelect({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`${styles.input} text-left flex justify-between items-center gap-8`}
+        type="button"
       >
         <span className="">{selectedLanguage.name}</span>
         <span className="w-4 h-4">
@@ -105,7 +106,7 @@ export default function LanguageSelect({
                 }`}
               ></div>
               <button
-                onMouseEnter={() => handleMouseEnter(index)}
+                // onMouseEnter={() => handleMouseEnter(index)}
                 onClick={() => {
                   setSelectedLanguage(lang);
                   setIsOpen(false);

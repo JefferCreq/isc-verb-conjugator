@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 
 const buttonStyle =
-  "flex bg-[#402A2B] w-fit h-fit min-h-12 min-w-40 rounded-md items-center justify-center";
+  "flex bg-[#402A2B] w-fit h-fit min-h-12 min-w-40 rounded-md items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed";
 
 type LinkButtonProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   children: React.ReactNode;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 const stylesDefault = {
   input:
@@ -15,47 +15,53 @@ type Props = {
     dropdownItem: string;
   };
   items: string[];
+  setVerbIsValid: (isValid: boolean) => void;
+  inputValue: string;
+  setInputValue: (value: string) => void;
 };
 
-export default function Autocomplete({ styles = stylesDefault, items }: Props) {
-  const [inputValue, setInputValue] = useState("");
-  const [filteredVerbs, setFilteredVerbs] = useState<string[]>([]);
+export default function Autocomplete({
+  styles = stylesDefault,
+  items,
+  setVerbIsValid,
+  inputValue,
+  setInputValue,
+}: Props) {
   const [isFocused, setIsFocused] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-    if (value) {
-      setFilteredVerbs(items.filter((verb) => verb.startsWith(value)));
-    } else {
-      setFilteredVerbs([]);
-    }
-  };
+  const filteredVerbs = useMemo(() => {
+    return items.filter((verb) => verb.includes(inputValue)).sort();
+  }, [inputValue, items]);
 
   const handleSelectVerb = (verb: string) => {
-    console.log(verb);
     setInputValue(verb);
-    setFilteredVerbs([]);
+    setIsFocused(false);
+    setVerbIsValid(items.includes(verb));
+  };
+
+  const handleBlur = (event: React.FocusEvent) => {
+    if (
+      !dropdownRef.current ||
+      dropdownRef.current.contains(event.relatedTarget as Node)
+    )
+      return;
     setIsFocused(false);
   };
 
-  const handleKeyDown = (
-    event: React.KeyboardEvent<HTMLDivElement>,
-    verb: string
-  ) => {
-    if (event.key === "Enter" || event.key === " ") {
-      handleSelectVerb(verb);
-    }
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+    setVerbIsValid(items.includes(event.target.value));
   };
 
   return (
-    <div className="relative w-full ">
+    <div className="relative w-full">
       <input
         type="text"
         value={inputValue}
-        onChange={handleInputChange}
+        onChange={handleChange}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setTimeout(() => setIsFocused(false), 100)}
+        onBlur={handleBlur}
         placeholder="Enter an Iskonawa verb"
         className={styles.input}
         name="verb"
@@ -63,19 +69,30 @@ export default function Autocomplete({ styles = stylesDefault, items }: Props) {
         autoComplete="off"
       />
       {isFocused && filteredVerbs.length > 0 && (
-        <div className={`flex flex-col overflow-y-hidden max-h-96 overflow-hidden ${styles.dropdown}`}>
+        <div
+          ref={dropdownRef}
+          className={`flex flex-col overflow-y-hidden max-h-96 overflow-hidden ${styles.dropdown} `}
+        >
           {filteredVerbs.map((verb) => (
-            <div
+            <button
               key={verb}
               onClick={() => handleSelectVerb(verb)}
-              onKeyDown={(event) => handleKeyDown(event, verb)}
-              role="button"
-              tabIndex={0}
-              className={`${styles.dropdownItem} cursor-pointer mx-2`}
+              className={`${styles.dropdownItem} cursor-pointer mx-2 text-left`}
+              type="button"
             >
               {verb}
-            </div>
+            </button>
           ))}
+        </div>
+      )}
+      {isFocused && filteredVerbs.length === 0 && (
+        <div
+          ref={dropdownRef}
+          className={`flex flex-col overflow-y-hidden max-h-64 overflow-hidden ${styles.dropdown} `}
+        >
+          <div className={`px-4 py-2 rounded-lg mx-2 text-left text-opacity-60 text-gray-700 italic`}>
+            No se han encontrado coincidencias.
+          </div>
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import { Form } from "@remix-run/react";
 import Autocomplete from "./Autocomplete";
 import { Button } from "./Button";
 import LanguageSelect from "~/components/LanguageSelect";
+import { useState } from "react";
 
 type Language = {
   name: string;
@@ -24,15 +25,31 @@ type Props = {
 };
 
 export default function VerbConjugatorField({ verbs, languages }: Props) {
+  const [verbIsValid, setVerbIsValid] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
   return (
     <Form
       method="post"
       id="conjugate-verb-form"
-      className="flex flex-row gap-4 w-full items-center"
+      className="flex flex-col gap-3 w-full items-center"
     >
-      <Autocomplete items={verbs} styles={styles} />
-      <LanguageSelect languages={languages} styles={styles} />
-      <Button type="submit">Conjugate</Button>
+      <div className="flex flex-row gap-4 w-full items-center">
+        <Autocomplete
+          items={verbs}
+          styles={styles}
+          setVerbIsValid={setVerbIsValid}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
+        <LanguageSelect languages={languages} styles={styles} />
+        <Button type="submit" disabled={!verbIsValid}>
+          Conjugate
+        </Button>
+      </div>
+      <div className="text-sm text-amber-900 italic h-6">
+        {inputValue !== "" && !verbIsValid ? "Ingrese un verbo válido." : null}
+      </div>
     </Form>
   );
 }

@@ -1,6 +1,17 @@
-import { Button } from "~/components/Button";
-// import { LinkButton } from "~/components/Button";
+import { MetaFunction } from "@remix-run/react";
+import { LinkButton } from "~/components/Button";
 import HeaderPage from "~/components/HeaderPage";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Modelo de Conjugación Verbal del Iskonawa" },
+    {
+      name: "description",
+      content:
+        "El Modelo de Conjugación Verbal del Iskonawa es una solución tecnológica desarrollada para documentar, preservar y revitalizar esta lengua indígena en peligro de extinción. Utilizando el modelo JefferCreq/M2M-ISCVerbInflector-AveragedFold, esta herramienta aprovecha técnicas avanzadas de procesamiento de lenguaje natural (NLP) y aprendizaje automático para generar conjugaciones verbales precisas, respetando la complejidad gramatical y morfológica del Iskonawa.",
+    },
+  ];
+};
 
 export default function ModelIndex() {
   return (
@@ -19,7 +30,10 @@ export default function ModelIndex() {
           solución tecnológica desarrollada para documentar, preservar y
           revitalizar esta lengua indígena en peligro de extinción. Utilizando
           el modelo{" "}
-          <a className="underline" href="https://huggingface.co/JefferCreq/M2M-ISCVerbInflector-AveragedFold">
+          <a
+            className="underline"
+            href="https://huggingface.co/JefferCreq/M2M-ISCVerbInflector-AveragedFold"
+          >
             <strong>JefferCreq/M2M-ISCVerbInflector-AveragedFold</strong>
           </a>
           , esta herramienta aprovecha técnicas avanzadas de procesamiento de
@@ -112,12 +126,7 @@ export default function ModelIndex() {
             esta herramienta.
           </p>
 
-          <Button
-            // to={"/model/contribute"}
-            disabled
-          >
-            Contribuir
-          </Button>
+          <LinkButton to={"/model/contribute"}>Contribuir</LinkButton>
         </div>
       </div>
     </div>

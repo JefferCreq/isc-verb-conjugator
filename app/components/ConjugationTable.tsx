@@ -1,5 +1,136 @@
+import { useState, useMemo } from "react";
+import {
+  aspectLabels,
+  moodLabels,
+  movementLabels,
+  negationLabels,
+  numberLabels,
+  otherLabels,
+  referenceChangeLabels,
+  tenseLabels,
+  transitivityLabels,
+  allLabels,
+} from "~/utils/labels";
+import FilterPanel from "./FilterPanel";
+import { FaFilter } from "react-icons/fa";
+import { FaFilterCircleXmark } from "react-icons/fa6";
+import Modal from "./Modal";
+import CardInflection from "./CardInflection";
+import { NavLink } from "@remix-run/react";
+
+type FilterOption = {
+  key: string;
+  label: string;
+  checked: boolean;
+};
+
+type FilterSection = {
+  title: string;
+  label: string;
+  options: FilterOption[];
+};
+
+const initialFilters: FilterSection[] = [
+  {
+    title: "Modo",
+    label: "mood",
+    options: Object.entries(moodLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Aspecto",
+    label: "aspect",
+    options: Object.entries(aspectLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Tiempo",
+    label: "tense",
+    options: Object.entries(tenseLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Número",
+    label: "number",
+    options: Object.entries(numberLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Negación",
+    label: "negation",
+    options: Object.entries(negationLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Transitividad",
+    label: "transitivity",
+    options: Object.entries(transitivityLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Movimiento",
+    label: "movement",
+    options: Object.entries(movementLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Cambio de referencia",
+    label: "ref_change",
+    options: Object.entries(referenceChangeLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+  {
+    title: "Otros",
+    label: "other",
+    options: Object.entries(otherLabels).map(([key, label]) => ({
+      key,
+      label,
+      checked: true,
+    })),
+  },
+];
+
+// //////////////////
+
+type SentenceEntry = {
+  index: string;
+  iskonawa_sentence: string;
+  suffix_sentence: string;
+  annotated_sentence: string;
+  spanish_sentence: string;
+  reference: string;
+  key: string;
+  spanish_verbs: string;
+};
+
 type ConjugationData = {
   inflection: string;
+  example: SentenceEntry | null;
+  key: string | null;
   mood: string;
   tense: string;
   aspect: string;
@@ -13,323 +144,329 @@ type ConjugationData = {
 
 type ConjugationTableProps = {
   data: ConjugationData[];
-};
-
-const moodLabels = {
-  IND: "Indicativo",
-  IMP: "Imperativo",
-  DUB: "Dubitativo",
-  ASER: "Asertivo",
-  DES: "Desiderativo",
-  HAB_M: "Habitivo",
-};
-
-const tenseLabels = {
-  PRS: "Presente",
-  PST: "Pasado",
-  FUT: "Futuro",
-  "DUR.mismo.día": "Durativo mismo día",
-  "FUT.INM": "Futuro inmediato",
-  "PST.REM": "Pasado remoto",
-  "PST.REM.DUR": "Pasado remoto durativo",
-  "PST.REM.HAB": "Pasado remoto habitual",
-  "PST.yesterday": "Pasado (ayer)",
-  "PST.days": "Pasado (hace días)",
-  "PST.yet": "Todavía (en curso)",
-  "PST.DUR": "El mismo día, durativo",
-};
-
-const aspectLabels = {
-  PFV: "Perfectivo",
-  IPFV: "Imperfectivo",
-  EST: "Estativo",
-  HAB_A: "Habitual",
-  PRG: "Progresivo",
-};
-
-const numberLabels = { SG: "Singular", PL: "Plural", DUAL: "Dual" };
-
-const negationLabels = {
-  "NEG.FRUS": "Frustrativo",
-  NEG: "Negativo",
-  "NEG.never": "Nunca",
-  "NEG.yet": "Todavía no",
-};
-
-const transitivityLabels = {
-  TR: "Transitivo",
-  INTR: "Intransitivo",
-};
-
-const movementLabels = {
-  "MOV.ANDA": "Andativo",
-  "MOV.DUR": "Durativo",
-  "MOV.ITER": "Iterativo",
-  "MOV.VEN": "Venitivo",
-  "MOV.around": "Dando vuelta",
-  "MOV.goto": "Ir a",
-  "MOV.passing": "Pasando",
-  "MOV.up": "Subiendo",
-  "MOV.down": "Bajando",
-  "MOV.arrive": "Llegar a"
-};
-
-const referenceChangeLabels = {
-  "REF.S/A>A": "Sujeto/Agente > Agente",
-  "REF.S/A>S": "Sujeto/Agente > Sujeto",
-};
-
-const otherLabels = {
-  ASOC: "Asociativo",
-  BEN: "Benefactivo",
-  CAU: "Causativo",
-  DIM: "Diminutivo",
-  ENF: "Enfático",
-  MAL: "Malintencionado",
-  REC: "Recíproco",
+  verb: string;
+  translations: {
+    spa: string;
+    eng: string;
+  };
 };
 
 // Prioridades para ordenar
 const tenseOrder = { PRS: 1, PST: 2, "PST.ayer": 3, FUT: 4 };
-const numberOrder = { SG: 0, PL: 1 };
+const numberOrder = { "PLU/SG": 1, SG: 2, PL: 3 };
 const moodOrder = { IND: 1, IMP: 2, DUB: 3, ASER: 4, DES: 5, HAB_M: 6 };
 const aspectOrder = { PFV: 1, IPFV: 2, EST: 3, HAB_A: 4, PRG: 5 };
 
-export default function ConjugationTable({ data }: ConjugationTableProps) {
-  // Ordenar los datos según las prioridades definidas
-  const sortedData = [...data].sort((a, b) => {
-    if (
-      tenseOrder[a.tense as keyof typeof tenseOrder] !==
-      tenseOrder[b.tense as keyof typeof tenseOrder]
-    ) {
-      return (
-        tenseOrder[a.tense as keyof typeof tenseOrder] -
-        tenseOrder[b.tense as keyof typeof tenseOrder]
-      );
-    }
-    if (
-      aspectOrder[a.aspect as keyof typeof aspectOrder] !==
-      aspectOrder[b.aspect as keyof typeof aspectOrder]
-    ) {
-      return (
-        aspectOrder[a.aspect as keyof typeof aspectOrder] -
-        aspectOrder[b.aspect as keyof typeof aspectOrder]
-      );
-    }
-    if (
-      moodOrder[a.mood as keyof typeof moodOrder] !==
-      moodOrder[b.mood as keyof typeof moodOrder]
-    ) {
-      return (
-        moodOrder[a.mood as keyof typeof moodOrder] -
-        moodOrder[b.mood as keyof typeof moodOrder]
-      );
-    }
-    return (
-      numberOrder[a.number as keyof typeof numberOrder] -
-      numberOrder[b.number as keyof typeof numberOrder]
-    );
-  });
+const transitivityOrder = { TR: 1, INTR: 2 };
 
-  // Agrupar los datos jerárquicamente
-  const groupedData = sortedData.reduce((acc, item) => {
-    if (!acc[item.mood]) acc[item.mood] = {};
-    if (!acc[item.mood][item.tense]) acc[item.mood][item.tense] = {};
-    if (!acc[item.mood][item.tense][item.aspect])
-      acc[item.mood][item.tense][item.aspect] = {};
-    if (!acc[item.mood][item.tense][item.aspect][item.number])
-      acc[item.mood][item.tense][item.aspect][item.number] = {};
-    const otherKey = item.other ?? "default";
-    if (!acc[item.mood][item.tense][item.aspect][item.number][otherKey])
-      acc[item.mood][item.tense][item.aspect][item.number][otherKey] = [];
-    acc[item.mood][item.tense][item.aspect][item.number][otherKey].push(item);
-    return acc;
-  }, {} as { [mood: string]: { [tense: string]: { [aspect: string]: { [number: string]: { [number: string]: ConjugationData[] } } } } });
+const negationOrder = { NEG: 1, "NEG.never": 2, "NEG.yet": 3, "NEG.FRUS": 4 };
+
+const groupOptions = [
+  { value: "tense", label: "Tiempo", dictLabel: tenseLabels },
+  { value: "aspect", label: "Aspecto", dictLabel: aspectLabels },
+  { value: "mood", label: "Modo", dictLabel: moodLabels },
+  { value: "number", label: "Número", dictLabel: numberLabels },
+];
+
+type ComponentProps = {
+  children: React.ReactNode;
+  groupBy: string;
+  category: string;
+  labels: Record<string, string>;
+  keyLabel: string;
+  classNameLabel?: string;
+};
+
+function Component({
+  children,
+  groupBy,
+  category,
+  labels,
+  keyLabel,
+  classNameLabel,
+}: ComponentProps) {
+  const showAsDetails: boolean = groupBy !== category;
+
+  if (showAsDetails) {
+    return (
+      <details open className="category">
+        <summary className={classNameLabel}>
+          {labels[keyLabel as keyof typeof labels] ?? "No especificado"}
+        </summary>
+        {children}
+      </details>
+    );
+  }
+
+  return <div>{children}</div>;
+}
+
+export default function ConjugationTable({
+  data,
+  verb,
+  translations,
+}: ConjugationTableProps) {
+  const [groupBy, setGroupBy] = useState<string>("tense");
+  const [showPanel, setShowPanel] = useState<boolean>(false);
+  const [filters, setFilters] = useState(initialFilters);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<ConjugationData | null>(
+    null
+  );
+
+  const handleReportClick = (item: ConjugationData) => {
+    setSelectedItem(item);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+  };
+
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      return filters.every((filterSection) => {
+        // Encuentra la opción en los filtros
+        const activeOptions = filterSection.options
+          .filter((option) => option.checked)
+          .map((option) => option.key);
+
+        // Obtén el valor correspondiente en el objeto `item`
+        const value = item[filterSection.label as keyof ConjugationData];
+
+        // Si el valor existe, asegúrate de que está en las opciones activas
+        if (typeof value === "string") {
+          return activeOptions.includes(value);
+        }
+
+        // Si no hay valor, pasa el filtro
+        return true;
+      });
+    });
+  }, [data, filters]);
+
+  const sortedData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      const getOrder = (
+        value: string | undefined,
+        order: Record<string, number>
+      ) =>
+        value === undefined
+          ? -1
+          : order[value as keyof typeof order] ?? Infinity;
+
+      const tenseComparison =
+        getOrder(a.tense, tenseOrder) - getOrder(b.tense, tenseOrder);
+      if (tenseComparison !== 0) return tenseComparison;
+
+      const aspectComparison =
+        getOrder(a.aspect, aspectOrder) - getOrder(b.aspect, aspectOrder);
+      if (aspectComparison !== 0) return aspectComparison;
+
+      const moodComparison =
+        getOrder(a.mood, moodOrder) - getOrder(b.mood, moodOrder);
+      if (moodComparison !== 0) return moodComparison;
+
+      const transitivityComparison =
+        getOrder(a.transitivity, transitivityOrder) -
+        getOrder(b.transitivity, transitivityOrder);
+      if (transitivityComparison !== 0) return transitivityComparison;
+
+      const numberComparison =
+        getOrder(a.number, numberOrder) - getOrder(b.number, numberOrder);
+      if (numberComparison !== 0) return numberComparison;
+
+      return (
+        getOrder(a.negation, negationOrder) -
+        getOrder(b.negation, negationOrder)
+      );
+    });
+  }, [filteredData]);
+
+  const groupedData = useMemo(() => {
+    return sortedData.reduce((acc, item) => {
+      const key =
+        String(item[groupBy as keyof ConjugationData]) ??
+        "undefined_" + groupBy;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, ConjugationData[]>);
+  }, [sortedData, groupBy]);
 
   return (
-    <div className="space-y-8">
-      {Object.entries(groupedData).map(([mood, tenseData]) => (
-        <div key={mood} className="overflow-hidden border-none">
-          <div className="bg-[#402A2B] bg-opacity-25 text-[#402A2B] text-lg font-bold px-4 py-2 uppercase text-center rounded-lg border-none">
-            {moodLabels[mood as keyof typeof moodLabels] ?? "Indicativo"}
-          </div>
-          <div className="w-full text-left grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-2 mt-2">
-            {Object.entries(tenseData).map(([tense, aspectData]) => (
-              <div
-                key={tense}
-                className="bg-white rounded-lg pt-2 pb-3 pr-4 pl-1"
-              >
-                <div className="text-gray-800 font-semibold py-1 px-4 rounded-t-lg text-sm">
-                  {tenseLabels[tense as keyof typeof tenseLabels] ??
-                    "Presente/Futuro"}
-                </div>
-                <div className="ml-4 border-l-4 border-gray-200 hover:border-[#402A2B] hover:border-opacity-25 pl-4">
-                  {Object.entries(aspectData).map(([aspect, numberData]) => (
-                    <div key={aspect} className="py-2">
-                      <div className="text-gray-700 font-medium px-4 text-sm">
-                        {aspectLabels[aspect as keyof typeof aspectLabels] ??
-                          "Perfectivo"}
-                      </div>
-                      <div className="ml-4 border-l-4 border-gray-200 pl-4">
-                        {Object.entries(numberData).map(
-                          ([number, othrerData]) => (
-                            <div key={number} className="py-2">
-                              <div className="text-gray-600 text-sm">
-                                {numberLabels[
-                                  number as keyof typeof numberLabels
-                                ] ?? "Singular/Plural"}
-                              </div>
-                              <div className="ml-4 border-l-4 border-gray-200 pl-4">
-                                {Object.entries(othrerData).map(
-                                  ([other, items]) => (
-                                    <div key={other} className="py-2">
-                                      <div className="text-gray-600 text-sm">
-                                        {otherLabels[
-                                          other as keyof typeof otherLabels
-                                        ] ?? "General"}
-                                      </div>
-
-                                      {items.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="px-4 py-2 text-gray-500 rounded-lg bg-gray-50 shadow-sm hover:shadow-md"
-                                        >
-                                          <div className="font-semibold">
-                                            {item.inflection}
-                                          </div>
-                                          {item.negation && (
-                                            <div className="text-xs text-gray-600">
-                                              Negación
-                                              {(item.negation !== "NEG" &&
-                                                `: ${
-                                                  negationLabels[
-                                                    item.negation as keyof typeof negationLabels
-                                                  ]
-                                                }`) ||
-                                                ""}
-                                            </div>
-                                          )}
-                                          {item.transitivity && (
-                                            <div className="text-xs text-gray-600">
-                                              Transitividad:{" "}
-                                              {
-                                                transitivityLabels[
-                                                  item.transitivity as keyof typeof transitivityLabels
-                                                ]
-                                              }
-                                            </div>
-                                          )}
-                                          {item.movement && (
-                                            <div className="text-xs text-gray-600">
-                                              Movimiento:{" "}
-                                              {
-                                                movementLabels[
-                                                  item.movement as keyof typeof movementLabels
-                                                ]
-                                              }
-                                            </div>
-                                          )}
-                                          {item.ref_change && (
-                                            <div className="text-xs text-gray-600">
-                                              Cambio de referencia:{" "}
-                                              {
-                                                referenceChangeLabels[
-                                                  item.ref_change as keyof typeof referenceChangeLabels
-                                                ]
-                                              }
-                                            </div>
-                                          )}
-                                          {/* {item.other && (
-                                            <div className="text-xs text-gray-600">
-                                              Otros:{" "}
-                                              {
-                                                otherLabels[
-                                                  item.other as keyof typeof otherLabels
-                                                ]
-                                              }
-                                            </div>
-                                          )} */}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )
-                                )}
-                              </div>
-
-                              {/* {items.map((item, index) => (
-                              <div
-                                key={index}
-                                className="px-4 py-2 text-gray-500 rounded-lg bg-gray-50 shadow-sm hover:shadow-md"
-                              >
-                                <div className="font-semibold">
-                                  {item.inflection}
-                                </div>
-                                {item.negation && (
-                                  <div className="text-xs text-gray-600">
-                                    Negación
-                                    {(item.negation !== "NEG" &&
-                                      `: ${
-                                        negationLabels[
-                                          item.negation as keyof typeof negationLabels
-                                        ]
-                                      }`) ||
-                                      ""}
-                                  </div>
-                                )}
-                                {item.transitivity && (
-                                  <div className="text-xs text-gray-600">
-                                    Transitividad:{" "}
-                                    {
-                                      transitivityLabels[
-                                        item.transitivity as keyof typeof transitivityLabels
-                                      ]
-                                    }
-                                  </div>
-                                )}
-                                {item.movement && (
-                                  <div className="text-xs text-gray-600">
-                                    Movimiento:{" "}
-                                    {
-                                      movementLabels[
-                                        item.movement as keyof typeof movementLabels
-                                      ]
-                                    }
-                                  </div>
-                                )}
-                                {item.ref_change && (
-                                  <div className="text-xs text-gray-600">
-                                    Cambio de referencia:{" "}
-                                    {
-                                      referenceChangeLabels[
-                                        item.ref_change as keyof typeof referenceChangeLabels
-                                      ]
-                                    }
-                                  </div>
-                                )}
-                                {item.other && (
-                                  <div className="text-xs text-gray-600">
-                                    Otros:{" "}
-                                    {
-                                      otherLabels[
-                                        item.other as keyof typeof otherLabels
-                                      ]
-                                    }
-                                  </div>
-                                )}
-                              </div>
-                            ))} */}
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+    <div className="">
+      <div className="flex flex-row items-center mb-4 gap-6 w-full">
+        <button
+          onClick={() => setShowPanel(!showPanel)}
+          className="flex flex-row items-center gap-2 font-semibold"
+        >
+          {showPanel ? <FaFilterCircleXmark /> : <FaFilter />} Filtros
+        </button>
+        <div>
+          <label htmlFor="groupBySelect" className="mr-2 font-semibold">
+            Agrupar por:
+          </label>
+          <select
+            id="groupBySelect"
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value)}
+            className="p-2 border border-gray-300 rounded"
+          >
+            {groupOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
-          </div>
+          </select>
         </div>
-      ))}
+        <div className="flex flex-row items-center gap-2">
+          <div className="border border-gray-300 w-fit rounded-md">
+            <div className="bg-orange-700 w-5 h-5 border-2 border-white rounded-md" />
+          </div>
+          <span className="text-sm">Conjugación de la bibliografía</span>
+        </div>
+        <div className="flex flex-row items-center gap-2">
+          <div className="border border-gray-300 w-fit rounded-md">
+            <div className="bg-gray-400 w-5 h-5 border-2 border-white rounded-md" />
+          </div>
+          <span className="text-sm">
+            Conjugación generada por el <NavLink to="/model" className="text-orange-700 underline">modelo</NavLink>
+          </span>
+        </div>
+      </div>
+      <div className="flex flex-row gap-4">
+        {showPanel && <FilterPanel filters={filters} setFilters={setFilters} />}
+        <div className="space-y-4 category">
+          {Object.entries(groupedData).map(([key, items], index) => {
+            const groupedByAspect = items.reduce((acc, item) => {
+              const aspectKey = item.aspect ?? "undefined_aspect";
+              if (!acc[aspectKey]) acc[aspectKey] = [];
+              acc[aspectKey].push(item);
+              return acc;
+            }, {} as Record<string, ConjugationData[]>);
+
+            return (
+              <details
+                key={index}
+                open
+                className="border border-[#402A2B] border-opacity-20 p-4 rounded-lg category"
+              >
+                <summary className="text-lg font-bold mb-1 cursor-pointer flex items-center">
+                  {allLabels[key as keyof typeof allLabels]}
+                </summary>
+                {Object.entries(groupedByAspect).map(
+                  ([aspectKey, aspectItems], idx) => {
+                    const groupedByMood = aspectItems.reduce((acc, item) => {
+                      const moodKey = item.mood ?? "undefined_mood";
+                      if (!acc[moodKey]) acc[moodKey] = [];
+                      acc[moodKey].push(item);
+                      return acc;
+                    }, {} as Record<string, ConjugationData[]>);
+                    return (
+                      <Component
+                        key={idx}
+                        groupBy={groupBy}
+                        category={"aspect"}
+                        labels={aspectLabels}
+                        keyLabel={aspectKey}
+                        classNameLabel="text-md font-semibold mb-1 ml-2 cursor-pointer flex items-center"
+                      >
+                        {Object.entries(groupedByMood).map(
+                          ([moodKey, moodItems], idz) => {
+                            const groupedByTense = moodItems.reduce(
+                              (acc, item) => {
+                                const tenseKey =
+                                  item.tense ?? "undefined_tense";
+                                if (!acc[tenseKey]) acc[tenseKey] = [];
+                                acc[tenseKey].push(item);
+                                return acc;
+                              },
+                              {} as Record<string, ConjugationData[]>
+                            );
+                            return (
+                              <Component
+                                key={idz}
+                                groupBy={groupBy}
+                                category={"mood"}
+                                labels={moodLabels}
+                                keyLabel={moodKey}
+                                classNameLabel="text-base text-zinc-600 font-semibold mb-1 ml-4 cursor-pointer flex items-center"
+                              >
+                                {Object.entries(groupedByTense).map(
+                                  ([tenseKey, tenseItems], idy) => {
+                                    const groupedByNumber = tenseItems.reduce(
+                                      (acc, item) => {
+                                        const numberKey =
+                                          item.number ?? "undefined_number";
+                                        if (!acc[numberKey])
+                                          acc[numberKey] = [];
+                                        acc[numberKey].push(item);
+                                        return acc;
+                                      },
+                                      {} as Record<string, ConjugationData[]>
+                                    );
+                                    return (
+                                      <Component
+                                        key={idy}
+                                        groupBy={groupBy}
+                                        category={"tense"}
+                                        labels={tenseLabels}
+                                        keyLabel={tenseKey}
+                                        classNameLabel="text-sm text-zinc-500 font-semibold mb-1 ml-6 cursor-pointer flex items-center"
+                                      >
+                                        {Object.entries(groupedByNumber).map(
+                                          ([numberKey, numberItems], idw) => (
+                                            <Component
+                                              key={idw}
+                                              groupBy={groupBy}
+                                              category={"number"}
+                                              labels={numberLabels}
+                                              keyLabel={numberKey}
+                                              classNameLabel="text-xs text-zinc-400 font-semibold mb-1 ml-8 cursor-pointer flex items-center"
+                                            >
+                                              <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-1 my-3">
+                                                {numberItems.map(
+                                                  (item, idv) => (
+                                                    <CardInflection
+                                                      key={idv}
+                                                      item={item}
+                                                      handleReportClick={
+                                                        handleReportClick
+                                                      }
+                                                    />
+                                                  )
+                                                )}
+                                              </div>
+                                            </Component>
+                                          )
+                                        )}
+                                      </Component>
+                                    );
+                                  }
+                                )}
+                              </Component>
+                            );
+                          }
+                        )}
+                      </Component>
+                    );
+                  }
+                )}
+              </details>
+            );
+          })}
+        </div>
+      </div>
+      {showModal && selectedItem && (
+        <Modal
+          onClose={handleCloseModal}
+          item={selectedItem}
+          verb={verb}
+          translations={translations}
+        />
+      )}
     </div>
   );
 }
