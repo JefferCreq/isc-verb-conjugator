@@ -297,7 +297,7 @@ export default function ConjugationTable({
 
   return (
     <div className="">
-      <div className="flex flex-row items-center mb-4 gap-6 w-full">
+      <div className="flex flex-row items-center mb-4 gap-6 w-full overflow-x-auto">
         <button
           onClick={() => setShowPanel(!showPanel)}
           className="flex flex-row items-center gap-2 font-semibold"

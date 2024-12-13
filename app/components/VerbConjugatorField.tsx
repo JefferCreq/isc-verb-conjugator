@@ -51,7 +51,7 @@ export default function VerbConjugatorField({ verbs, languages }: Props) {
       id="conjugate-verb-form"
       className="flex flex-col gap-3 w-full items-center"
     >
-      <div className="flex flex-row gap-4 w-full items-center">
+      <div className="flex flex-col md:flex-row gap-4 w-full items-center">
         <Autocomplete
           items={verbs}
           styles={styles}

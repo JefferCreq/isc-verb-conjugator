@@ -79,7 +79,7 @@ export default function LanguageSelect({
 
   return (
     <div
-      className="relative min-w-[14rem]"
+      className="relative md:min-w-[14rem] min-w-full"
       onKeyDown={handleKeyDown}
       role="listbox"
       ref={listRef}
