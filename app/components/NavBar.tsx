@@ -63,7 +63,7 @@ export default function NavBar() {
                 className="flex w-5 h-5 mx-2 text-white self-center"
                 alt="Repositorio"
               />
-              <span className="text-base font-normal">Repositorio</span>
+              <span className="text-base font-normal block md:hidden">Repositorio</span>
             </a>
           </nav>
         </div>
