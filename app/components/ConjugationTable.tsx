@@ -336,9 +336,9 @@ export default function ConjugationTable({
           </span>
         </div>
       </div>
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-row gap-4 w-full">
         {showPanel && <FilterPanel filters={filters} setFilters={setFilters} />}
-        <div className="space-y-4 category">
+        <div className="space-y-4 category w-full">
           {Object.entries(groupedData).map(([key, items], index) => {
             const groupedByAspect = items.reduce((acc, item) => {
               const aspectKey = item.aspect ?? "undefined_aspect";
@@ -351,7 +351,7 @@ export default function ConjugationTable({
               <details
                 key={index}
                 open
-                className="border border-[#402A2B] border-opacity-20 p-4 rounded-lg category"
+                className="border border-[#402A2B] border-opacity-20 p-4 rounded-lg category w-full"
               >
                 <summary className="text-lg font-bold mb-1 cursor-pointer flex items-center">
                   {allLabels[key as keyof typeof allLabels]}

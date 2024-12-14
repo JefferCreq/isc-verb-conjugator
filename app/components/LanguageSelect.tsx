@@ -21,15 +21,16 @@ type Props = {
     dropdownItem: string;
   };
   languages: Language[];
+  selectedLanguage: Language;
+  setSelectedLanguage: (lang: Language) => void;
 };
 
 export default function LanguageSelect({
   styles = stylesDefault,
   languages,
+  selectedLanguage,
+  setSelectedLanguage,
 }: Props) {
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(
-    languages[0]
-  );
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -50,10 +51,6 @@ export default function LanguageSelect({
       }
     }
   };
-
-  // const handleMouseEnter = (index: number) => {
-  //   setHighlightedIndex(index);
-  // };
 
   useEffect(() => {
     if (isOpen && listRef.current) {
@@ -79,7 +76,7 @@ export default function LanguageSelect({
 
   return (
     <div
-      className="relative md:min-w-[14rem] min-w-full"
+      className="relative md:min-w-[13rem] min-w-full w-full"
       onKeyDown={handleKeyDown}
       role="listbox"
       ref={listRef}
@@ -90,7 +87,13 @@ export default function LanguageSelect({
         className={`${styles.input} text-left flex justify-between items-center gap-8`}
         type="button"
       >
-        <span className="">{selectedLanguage.name}</span>
+        {/* <span className="">{selectedLanguage.name}</span> */}
+        <div>
+          <span>{selectedLanguage.name}</span>{" "}
+          <span className="text-gray-400 font-light font-mono text-sm">
+            ({selectedLanguage.code})
+          </span>
+        </div>
         <span className="w-4 h-4">
           <img src="/selector-icon.svg" alt="expand" className="w-4 h-4" />
         </span>

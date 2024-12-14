@@ -8,33 +8,17 @@ import { redirect, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import HeaderPage from "~/components/HeaderPage";
 import VerbConjugatorField from "~/components/VerbConjugatorField";
+import { ConjugationEntry, Language } from "~/types/verb";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Conjugación de verbos Iskonawa" },
-    { name: "description", content: "Welcome to Remix!" },
+    {
+      name: "description",
+      content:
+        "El conjugador de verbos en Iskonawa es una herramienta diseñada para apoyar el aprendizaje y preservación de esta lengua amazónica en peligro de extinción. Ingresa un verbo en Iskonawa, selecciona el contexto gramatical y descubre cómo se conjuga en distintos tiempos, modos y aspectos. ¡Sumérgete en la riqueza de este idioma y contribuye a mantener viva su herencia cultural!",
+    },
   ];
-};
-
-type ConjugationEntry = {
-  forma_base: string;
-  inflections: Array<{
-    inflection: string;
-    mood: string;
-    tense: string;
-    aspect: string;
-    number: string;
-  }>;
-  translations: {
-    spanish_meaning: string;
-    english_meaning: string;
-  };
-};
-
-type Language = {
-  name: string;
-  code: string;
-  enabled: boolean;
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -46,12 +30,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   const conjugations = await response.json();
-  const verbs = conjugations.map((entry: ConjugationEntry) => entry.forma_base);
+
+  const verbs = conjugations.flatMap((entry: ConjugationEntry) =>
+    entry.spanish_meaning.map((spa, index) => ({
+      isc_verb: entry.forma_base,
+      spa_verb: spa,
+      eng_verb: entry.english_meaning[index],
+    }))
+  );
 
   const languages: Language[] = [
     { name: "Iskonawa", code: "isc", enabled: true },
-    { name: "Español", code: "spa", enabled: false },
-    { name: "English", code: "eng", enabled: false },
+    { name: "Español", code: "spa", enabled: true },
+    { name: "English", code: "eng", enabled: true },
   ];
 
   return json({ languages, verbs });
@@ -79,7 +70,7 @@ export default function Index() {
           </span>
         }
       />
-      <div className="flex flex-col self-center text-left py-14 gap-4 font-normal w-5/6 md:w-4/6 text-gray-800">
+      <div className="flex flex-col self-center text-left py-12 pb-14 gap-4 font-normal w-5/6 md:w-4/6 text-gray-800">
         <div className="self-center flex w-full max-w-4xl">
           <VerbConjugatorField languages={languages} verbs={verbs} />
         </div>
