@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { cn } from "~/utils/cn";
 
 const buttonStyle =
   "flex bg-[#402A2B] w-fit h-fit min-h-12 min-w-40 rounded-md items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed";
@@ -34,13 +35,23 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary";
 };
 
-export function Button({ children, variant = "primary", ...props }: Props) {
+export function Button({
+  children,
+  className,
+  variant = "primary",
+  ...props
+}: Props) {
   return (
     <button
-      className={`${props.className} ${
-        variant == "primary" ? "text-[#ECECEC]" : "bg-opacity-15 text-[#402A2B]"
-      }
-      ${buttonStyle}`}
+      className={cn(
+        `${
+          variant == "primary"
+            ? "text-[#ECECEC]"
+            : "bg-opacity-15 text-[#402A2B]"
+        }
+      ${buttonStyle}`,
+        className
+      )}
       {...props}
     >
       {children}
