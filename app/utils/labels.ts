@@ -35,7 +35,7 @@ export const aspectLabels = {
 };
 
 export const numberLabels = {
-  "PLU/SG": "Plural/Singular",
+  "PLU/SG": "Singular/Plural",
   SG: "Singular",
   PL: "Plural",
   DUAL: "Dual",
